@@ -1,0 +1,32 @@
+class CNN(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.block1 = nn.Sequential(
+            # outputOfEachConvLayer = [(in_channel + 2*padding - kernel_size) / stride] + 1
+                nn.Conv2d(in_channels=3, out_channels=12, kernel_size=5, padding=1, stride=1),
+                nn.ReLU(),
+                nn.MaxPool2d(kernel_size=4), 
+                nn.Conv2d(in_channels=12, out_channels=24, kernel_size=5, padding=1, stride=1),
+                nn.ReLU(),
+                nn.MaxPool2d(kernel_size=4)               
+                # Since we applied maxpooling with kernel_size=2 we have to divide by 2, so we get
+                # 14 / 2 = 7
+        )
+
+        self.block2 = nn.Sequential(
+                # We have the output_channel=24 of our second conv layer, and 7*7 is derived by the formular 
+                # which is the output of each convolutional layer
+                nn.Linear(in_features=216, out_features=64),
+                # nn.Linear(in_features=5400, out_features=64),          
+
+                nn.ReLU(),
+                nn.Dropout(p=0.2), # Dropout with probability of 0.2 to avoid overfitting
+                nn.Linear(in_features=64, out_features=10) # The output is 10 which should match the size of our class
+        )
+
+    def forward(self, x):
+        x = self.block1(x)
+        x = x.view(x.size(0), -1)
+        x = self.block2(x)
+        return x
